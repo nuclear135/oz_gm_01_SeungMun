@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /*
-특정 도감번호의 폼(중복 No) 목록을 한 번에 확인하는 디버그 스크립트.
--FormChangeVariantIndex가 아직 없을 수 있어서 호출하지 않는다(컴파일 에러 방지).
+PokedexDebug는씬/오브젝트에붙는MonoBehaviour컴포넌트다.
+-데이터테이블/ScriptableObject를읽어런타임조회가가능하도록초기화한다.
+-컴포넌트참조는Awake에서캐싱하고,null을가드한다.
+-Update에서GC유발패턴을피한다.
 */
 public class PokedexDebug : MonoBehaviour
 {

@@ -1,28 +1,31 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /*
-GameManager¸¦ ÅëÇØ ¾À ÀüÈ¯¸¸ È£ÃâÇÏ´Â ¹öÆ° ÄÁÆ®·Ñ·¯.
--¾À ÀÌ¸§Àº GameManager°¡ °ü¸®ÇÑ´Ù.
+SceneControllerëŠ”ì”¬/ì˜¤ë¸Œì íŠ¸ì—ë¶™ëŠ”MonoBehaviourì»´í¬ë„ŒíŠ¸ë‹¤.
+-ì”¬ì „í™˜ì„ë¹„ë™ê¸°ë¡œì²˜ë¦¬í•˜ê³ ,ì „í™˜ì¤‘ì¤‘ë³µí˜¸ì¶œì„ê°€ë“œí•œë‹¤.
+-ì™¸ë¶€ì—ì„œëŠ”OnClickGoLobbyì„í˜¸ì¶œí•´ì´ê¸°ëŠ¥ì„ì‚¬ìš©í•œë‹¤.
+-ì™¸ë¶€ì—ì„œëŠ”OnClickGoGameì„í˜¸ì¶œí•´ì´ê¸°ëŠ¥ì„ì‚¬ìš©í•œë‹¤.
 */
 public class SceneController : MonoBehaviour
 {
+    //ë²„íŠ¼ì—°ê²°ìš©
     public void OnClickGoLobby()
     {
-        if (GameManager.Instance == null)
+        if(GameManager.Instance == null)
         {
-            Debug.LogError("GameManager.Instance°¡ ¾ø¾î.BootSceneºÎÅÍ ½ÇÇàÇØÁà.");
+            Debug.LogError("//GameManager.Instance null");
             return;
         }
 
         GameManager.Instance.LoadLobby();
     }
 
+    //ë²„íŠ¼ì—°ê²°ìš©
     public void OnClickGoGame()
     {
-        if (GameManager.Instance == null)
+        if(GameManager.Instance == null)
         {
-            Debug.LogError("GameManager.Instance°¡ ¾ø¾î.BootSceneºÎÅÍ ½ÇÇàÇØÁà.");
+            Debug.LogError("//GameManager.Instance null");
             return;
         }
 

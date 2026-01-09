@@ -1,9 +1,10 @@
 using UnityEngine;
 
 /*
-LobbyScene에서 도감 DB 연결 상태를 빠르게 확인하기 위한 스모크 테스트.
--GameManager→PokedexService가 초기화 되었는지 확인한다.
--초기화 됐다면 엔트리 일부를 콘솔에 출력한다.
+LobbyPokedexTest는씬/오브젝트에붙는MonoBehaviour컴포넌트다.
+-씬에서빠른상태확인을위한스모크테스트용출력을제공한다.
+-컴포넌트참조는Awake에서캐싱하고,null을가드한다.
+-Update에서GC유발패턴을피한다.
 */
 public class LobbyPokedexTest : MonoBehaviour
 {

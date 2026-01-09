@@ -3,51 +3,221 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /*
-¾À ÀüÈ¯À» ´ÜÀÏ Ã¥ÀÓÀ¸·Î Ã³¸®ÇÏ´Â ·Î´õ.
-- Áßº¹ ·Îµå¸¦ ¹æÁöÇÏ°í, ½ÇÆÐ ½Ã ·Î±×¸¦ ³²±ä´Ù.
-- GameManager°¡ ÁøÀÔÁ¡ÀÌ¸ç, ´Ù¸¥ ½Ã½ºÅÛÀº SceneLoader¸¸ È£ÃâÇÑ´Ù.
+SceneLoaderëŠ”ì”¬ì „í™˜ì„ë¹„ë™ê¸°ë¡œì²˜ë¦¬í•˜ëŠ”MonoBehaviourì»´í¬ë„ŒíŠ¸ë‹¤.
+-ë¡œë”©UIë¥¼í‘œì‹œí•˜ê³ í•œí”„ë ˆìž„ì–‘ë³´í•´ë Œë”ë§ê¸°íšŒë¥¼ë³´ìž¥í•œë‹¤.
+-allowSceneActivationì„ì‚¬ìš©í•´0.9ë¡œë”©ì™„ë£Œí›„ìµœì†Œí‘œì‹œì‹œê°„ì„ë§Œì¡±í•œë’¤í™œì„±í™”í•œë‹¤.
 */
 public class SceneLoader : MonoBehaviour
 {
-    private bool isLoading; //µ¿½Ã ·Îµå ¹æÁö(¿¬Å¸/Áßº¹ È£Ãâ ¹æÁö)
+    [SerializeField] private float minLoadingVisibleSeconds = 1.2f;//ìµœì†Œí‘œì‹œì‹œê°„(ë””ë²„ê·¸í™•ì¸ìš©)
+    [SerializeField] private bool enableDebug = true;//ë””ë²„ê·¸ë¡œê·¸í† ê¸€
 
-    public bool IsLoading => isLoading; //UI¿¡¼­ ·Îµù »óÅÂ Ç¥½Ã µî¿¡ »ç¿ë °¡´É
+    private bool isLoading;//ì¤‘ë³µë¡œë“œë°©ì§€
+    public bool IsLoading => isLoading;
 
     public IEnumerator LoadSceneAsync(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
     {
-        //¾À ·ÎµùÀº µ¿½Ã¿¡ 2°³ ÀÌ»ó °É¸®¸é »óÅÂ ²¿ÀÌ±â ½¬¿ò(Æ¯È÷ Single ¸ðµå)
         if (isLoading)
         {
-            Debug.LogWarning($"ÀÌ¹Ì ¾À ·Îµù ÁßÀÌ¾ß. ¿äÃ» ¹«½ÃµÊ: {sceneName}");
+            Debug.LogWarning($"//AlreadyLoading:{sceneName}");
             yield break;
         }
 
         if (string.IsNullOrWhiteSpace(sceneName))
         {
-            Debug.LogError("LoadSceneAsync: sceneNameÀÌ ºñ¾îÀÖ¾î.");
+            Debug.LogError("//LoadSceneAsync sceneName empty");
             yield break;
         }
 
         isLoading = true;
 
-        //Build Settings ´©¶ôÀÌ¸é op°¡ nullÀÏ ¼ö ÀÖ¾î¼­ ¹æ¾î
+        float shownAt = Time.unscaledTime;
+
+        Dbg($"//LoadSceneAsync begin name={sceneName},mode={mode},active={SceneManager.GetActiveScene().name}");
+
+        if (UIController.Instance != null)
+        {
+            UIController.Instance.ShowLoading();
+            shownAt = Time.unscaledTime;
+            yield return null;//ë¡œë”©UIê·¸ë¦´í”„ë ˆìž„ì–‘ë³´
+            Dbg("//LoadSceneAsync afterShowLoading");
+        }
+        else
+        {
+            Dbg("//LoadSceneAsync UIController null");
+        }
+
         AsyncOperation op = SceneManager.LoadSceneAsync(sceneName, mode);
         if (op == null)
         {
-            Debug.LogError($"¾À ·Îµå ¿äÃ» ½ÇÆÐ: {sceneName}. Build Settings¿¡ ¾ÀÀÌ µî·ÏµÇ¾î ÀÖ´ÂÁö È®ÀÎÇØÁà.");
+            Debug.LogError($"//LoadSceneAsync failed:{sceneName}");
+            if (UIController.Instance != null)
+            {
+                UIController.Instance.HideLoading();
+            }
             isLoading = false;
             yield break;
         }
 
-        //MVP¿¡¼­´Â ¹Ù·Î È°¼ºÈ­(·Îµù È­¸é/ÇÁ·Î±×·¹½º´Â ³ªÁß¿¡ È®Àå)
-        op.allowSceneActivation = true;
+        op.allowSceneActivation = false;
 
-        while (!op.isDone)
+        while (op.progress < 0.9f)
         {
-            //ÇÊ¿äÇÏ¸é ¿©±â¼­ ÁøÇà·ü(op.progress) ±â¹Ý UI ¿¬°á
+            DbgProgress(op.progress);
             yield return null;
         }
 
+        float remain = minLoadingVisibleSeconds - (Time.unscaledTime - shownAt);
+        Dbg($"//LoadSceneAsync progress=0.9 remain={remain:0.000}");
+
+        if (remain > 0f)
+        {
+            yield return new WaitForSecondsRealtime(remain);
+        }
+
+        op.allowSceneActivation = true;
+        Dbg("//LoadSceneAsync allowSceneActivation=true");
+
+        while (!op.isDone)
+        {
+            yield return null;
+        }
+
+        Dbg($"//LoadSceneAsync done active={SceneManager.GetActiveScene().name}");
+
+        if (UIController.Instance != null)
+        {
+            UIController.Instance.HideLoading();
+        }
+
         isLoading = false;
+    }
+
+    public IEnumerator LoadSceneReplaceActiveAsync(string sceneName)
+    {
+        if (isLoading)
+        {
+            Debug.LogWarning($"//AlreadyLoading:{sceneName}");
+            yield break;
+        }
+
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            Debug.LogError("//LoadSceneReplaceActiveAsync sceneName empty");
+            yield break;
+        }
+
+        isLoading = true;
+
+        Scene prevActive = SceneManager.GetActiveScene();
+        float shownAt = Time.unscaledTime;
+
+        Dbg($"//Replace begin name={sceneName},prevActive={prevActive.name}");
+
+        if (UIController.Instance != null)
+        {
+            UIController.Instance.ShowLoading();
+            shownAt = Time.unscaledTime;
+            yield return null;//ë¡œë”©UIê·¸ë¦´í”„ë ˆìž„ì–‘ë³´
+            Dbg("//Replace afterShowLoading");
+        }
+        else
+        {
+            Dbg("//Replace UIController null");
+        }
+
+        AsyncOperation loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        if (loadOp == null)
+        {
+            Debug.LogError($"//LoadSceneReplaceActiveAsync load failed:{sceneName}");
+            if (UIController.Instance != null)
+            {
+                UIController.Instance.HideLoading();
+            }
+            isLoading = false;
+            yield break;
+        }
+
+        loadOp.allowSceneActivation = false;
+
+        while (loadOp.progress < 0.9f)
+        {
+            DbgProgress(loadOp.progress);
+            yield return null;
+        }
+
+        float remain = minLoadingVisibleSeconds - (Time.unscaledTime - shownAt);
+        Dbg($"//Replace progress=0.9 remain={remain:0.000}");
+
+        if (remain > 0f)
+        {
+            yield return new WaitForSecondsRealtime(remain);
+        }
+
+        loadOp.allowSceneActivation = true;
+        Dbg("//Replace allowSceneActivation=true");
+
+        while (!loadOp.isDone)
+        {
+            yield return null;
+        }
+
+        Scene loaded = SceneManager.GetSceneByName(sceneName);
+        if (!loaded.IsValid() || !loaded.isLoaded)
+        {
+            Debug.LogError($"//LoadSceneReplaceActiveAsync scene not loaded:{sceneName}");
+            if (UIController.Instance != null)
+            {
+                UIController.Instance.HideLoading();
+            }
+            isLoading = false;
+            yield break;
+        }
+
+        SceneManager.SetActiveScene(loaded);
+        Dbg($"//Replace setActiveScene loaded={loaded.name}");
+
+        if (prevActive.IsValid() && prevActive.isLoaded && prevActive.name != loaded.name)
+        {
+            AsyncOperation unloadOp = SceneManager.UnloadSceneAsync(prevActive);
+            Dbg($"//Replace unload prevActive={prevActive.name}");
+
+            if (unloadOp != null)
+            {
+                while (!unloadOp.isDone)
+                {
+                    yield return null;
+                }
+            }
+        }
+
+        if (UIController.Instance != null)
+        {
+            UIController.Instance.HideLoading();
+        }
+
+        Dbg($"//Replace done active={SceneManager.GetActiveScene().name}");
+
+        isLoading = false;
+    }
+
+    private void Dbg(string msg)
+    {
+        if (!enableDebug)
+        {
+            return;
+        }
+
+        Debug.Log(msg);
+    }
+
+    private void DbgProgress(float p)
+    {
+        if (!enableDebug)
+        {
+            return;
+        }
+
+        Debug.Log($"//Loading progress={p:0.000}");
     }
 }

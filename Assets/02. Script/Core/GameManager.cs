@@ -1,40 +1,46 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /*
-BootScene¿¡¼­ 1È¸ ½ÇÇàµÇ´Â ÄÚ¾î ¿£Æ®¸® Æ÷ÀÎÆ®.
-- ¸Å´ÏÀú¸¦ BootScene¿¡¼­¸¸ »ý¼ºÇÏ°í DontDestroyOnLoad·Î À¯ÁöÇÑ´Ù.
-- µ¥ÀÌÅÍ(SO)¸¦ ÃÊ±âÈ­ÇÑ µÚ LobbySceneÀ¸·Î ÀÌµ¿ÇÑ´Ù.
-- ·±Å¸ÀÓ¿¡¼­ GameManager¸¦ ÅëÇØ SceneLoader/PokedexService¿¡ ´ÜÀÏ Á¢±ÙÇÑ´Ù.
-- ¾À ÀÌ¸§Àº GameManager°¡ °ü¸®ÇÏ°í, UI´Â GameManagerÀÇ LoadLobby/LoadGame¸¸ È£ÃâÇÑ´Ù.
+GameManagerëŠ”ê²Œìž„ì „ì—­ìƒíƒœì™€ë¶€íŠ¸í”Œë¡œìš°ë¥¼ê´€ë¦¬í•˜ëŠ”MonoBehaviourì»´í¬ë„ŒíŠ¸ë‹¤.
+-ë¶€íŠ¸ì—ì„œë°ì´í„°ì´ˆê¸°í™”ë¥¼ì‹œë„í•˜ê³ ë¶€íŠ¸í™”ë©´ì„ìµœì†Œì‹œê°„í‘œì‹œí•œë‹¤.
+-ë°ì´í„°ì—ì…‹ì´ì—†ìœ¼ë©´ì´ˆê¸°í™”ë¥¼ìŠ¤í‚µí•˜ê³ í”Œë¡œìš°ëŠ”ê³„ì†ì§„í–‰í•œë‹¤.
+-ì”¬ì „í™˜ì§ì „ì—ë¡œë”©UIë¥¼ë¨¼ì €í‘œì‹œí•´ì „í™˜ì¤‘ë¡œë”©í™”ë©´ì´ë°˜ë“œì‹œë³´ì´ë„ë¡í•œë‹¤.
+-ì™¸ë¶€ì—ì„œLoadLobby/LoadGameì„í˜¸ì¶œí•´ì”¬ì „í™˜ì„ìš”ì²­í• ìˆ˜ìžˆë‹¤.
+-ì™¸ë¶€ì—ì„œPokedexë¡œë„ê°ì„œë¹„ìŠ¤ì—ì ‘ê·¼í• ìˆ˜ìžˆë‹¤.
 */
 [DefaultExecutionOrder(-1000)]
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }            //Àü¿ª Á¢±Ù ÁöÁ¡(Áßº¹ »ý¼º ¹æÁö)
+    public static GameManager Instance { get; private set; }//ì‹±ê¸€í†¤
 
     [Header("Scenes")]
-    [SerializeField] private string lobbySceneName = "02. LobbyScene";//Boot ÀÌÈÄ ·ÎµåÇÒ ·Îºñ ¾À ÀÌ¸§(½ÇÁ¦ ÀÌ¸§)
-    [SerializeField] private string gameSceneName = "03. GameScene";//·Îºñ¿¡¼­ ÁøÀÔÇÒ °ÔÀÓ ¾À ÀÌ¸§(½ÇÁ¦ ÀÌ¸§)
+    [SerializeField] private string bootSceneName = "01. BootScene";//ë¶€íŠ¸ì”¬ì´ë¦„
+    [SerializeField] private string lobbySceneName = "02. LobbyScene";//ë¡œë¹„ì”¬ì´ë¦„
+    [SerializeField] private string gameSceneName = "03. GameScene";//ê²Œìž„ì”¬ì´ë¦„
+
+    [Header("BootFlow")]
+    [SerializeField] private bool autoEnterLobbyFromBoot = true;//ë¶€íŠ¸ìžë™ì§„ìž…
+    [SerializeField] private float bootMinVisibleSeconds = 3f;//ë¶€íŠ¸ìµœì†Œí‘œì‹œì‹œê°„
+    [SerializeField] private float bootExtraRandomSeconds = 2f;//ë¶€íŠ¸ì¶”ê°€ëžœë¤(0~N)
+    [SerializeField] private bool enableDebug = true;//ë””ë²„ê·¸ë¡œê·¸í† ê¸€
 
     [Header("Data")]
-    [SerializeField] private PokemonDatabaseSO pokemonDatabase;//µµ°¨ DB(SO) ·¹ÆÛ·±½º
+    [SerializeField] private PokemonDatabaseSO pokemonDatabase;//ë„ê°DB
 
     [Header("Managers")]
-    [SerializeField] private SceneLoader sceneLoader;//¾À ·Î´õ(ÀüÈ¯ ´ÜÀÏ Ã¥ÀÓ)
-    [SerializeField] private PokedexService pokedexService;//µµ°¨ ¼­ºñ½º(Á¶È¸/Ä³½Ã ´ÜÀÏ Ã¥ÀÓ)
+    [SerializeField] private SceneLoader sceneLoader;//ì”¬ë¡œë”
+    [SerializeField] private PokedexService pokedexService;//ë„ê°ì„œë¹„ìŠ¤
 
-    public SceneLoader SceneLoader => sceneLoader;//ÄÚ¾î ¼­ºñ½º Á¢±Ù¿ë
-    public PokedexService Pokedex => pokedexService;//ÄÚ¾î ¼­ºñ½º Á¢±Ù¿ë
+    public SceneLoader SceneLoader => sceneLoader;//ì™¸ë¶€ì ‘ê·¼
+    public PokedexService Pokedex => pokedexService;//ì™¸ë¶€ì ‘ê·¼
 
-    public string LobbySceneName => lobbySceneName;//µð¹ö±×/Åø¸µ È®ÀÎ¿ë
-    public string GameSceneName => gameSceneName;//µð¹ö±×/Åø¸µ È®ÀÎ¿ë
-
-    private bool isBootstrapped;//Start Áßº¹ ½ÇÇà ¹æÁö
+    private bool isBootstrapped;//ë¶€íŠ¸ì¤‘ë³µë°©ì§€
+    private bool isTransitioning;//ì „í™˜ì¤‘ì¤‘ë³µë°©ì§€
 
     private void Awake()
     {
-        //½Ì±ÛÅæ: BootScene¿¡¼­ ½Ç¼ö·Î ÇÁ¸®ÆÕ/¾À Áßº¹ ¹èÄ¡µÅµµ 1°³¸¸ À¯ÁöÇÏ±â À§ÇÔ
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -42,43 +48,47 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-
-        //¾ÀÀÌ ¹Ù²î¾îµµ ÄÚ¾î ¸Å´ÏÀú´Â À¯ÁöµÇ¾î¾ß ·± ·çÇÁ/µ¥ÀÌÅÍ Ä³½Ã°¡ ²÷±âÁö ¾ÊÀ½
         DontDestroyOnLoad(gameObject);
 
-        //ÀÎ½ºÆåÅÍ ´©¶ô/ÇÁ¸®ÆÕ º¯°æ¿¡µµ ½ÇÇàµÇµµ·Ï ÀÚµ¿ º¸Á¤
         EnsureCoreComponents();
+        Dbg("//GameManager Awake");
     }
 
     private void Start()
     {
-        //¾À ·Îµå/¸®·Îµå µîÀ¸·Î Start°¡ ´Ù½Ã Å¸´Â »óÈ² ¹æÁö
         if (isBootstrapped)
         {
             return;
         }
 
         isBootstrapped = true;
-
-        //ÄÚ¾î ÃÊ±âÈ­ ¼ø¼­(µ¥ÀÌÅÍ¡æ¾À)¸¦ À¯ÁöÇÏ±â À§ÇØ ÄÚ·çÆ¾ »ç¿ë
         StartCoroutine(BootstrapRoutine());
     }
 
-    //UI¿¡¼­ ¹Ù·Î È£ÃâÇÏ´Â ÁøÀÔÁ¡(¾À ÀÌ¸§Àº GameManager°¡ °¡Áø´Ù)
+    //ì™¸ë¶€í˜¸ì¶œìš©
     public void LoadLobby()
     {
+        if (isTransitioning)
+        {
+            return;
+        }
+
         StartCoroutine(LoadSceneRoutine(lobbySceneName));
     }
 
-    //UI¿¡¼­ ¹Ù·Î È£ÃâÇÏ´Â ÁøÀÔÁ¡(¾À ÀÌ¸§Àº GameManager°¡ °¡Áø´Ù)
+    //ì™¸ë¶€í˜¸ì¶œìš©
     public void LoadGame()
     {
+        if (isTransitioning)
+        {
+            return;
+        }
+
         StartCoroutine(LoadSceneRoutine(gameSceneName));
     }
 
     private void EnsureCoreComponents()
     {
-        //ÄÄÆ÷³ÍÆ® ÂüÁ¶ ´©¶ô ½Ã ·±Å¸ÀÓ¿¡¼­ Áï½Ã º¹±¸ÇØ ½ÇÇà ÀÚÃ¼´Â µÇ°Ô ¸¸µç´Ù.
         if (sceneLoader == null)
         {
             sceneLoader = GetComponent<SceneLoader>();
@@ -102,28 +112,107 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator BootstrapRoutine()
     {
-        //µ¥ÀÌÅÍ ÃÊ±âÈ­´Â ¾À ÀüÈ¯ Àü¿¡ ³¡³»¾ß Lobby¿¡¼­ Áï½Ã ÂüÁ¶ °¡´É
+        Scene active = SceneManager.GetActiveScene();
+        if (!active.IsValid() || active.name != bootSceneName)
+        {
+            yield break;
+        }
+
+        Dbg($"//Bootstrap begin scene={active.name}");
+
+        if (UIController.Instance != null)
+        {
+            UIController.Instance.ShowBoot();
+        }
+
+        float startedAt = Time.unscaledTime;
+
         if (pokemonDatabase == null)
         {
-            Debug.LogError("PokemonDatabaseSO°¡ GameManager¿¡ ¿¬°áµÇÁö ¾Ê¾Ò¾î.BootSceneÀÇ GameManager ÀÎ½ºÆåÅÍ¿¡ ÇÒ´çÇØÁà.");
+            Dbg("//PokemonDatabaseSO missing,skip init");
         }
         else
         {
-            pokedexService.Initialize(pokemonDatabase);
+            if (pokedexService != null)
+            {
+                Dbg("//PokedexService Initialize");
+                pokedexService.Initialize(pokemonDatabase);
+            }
         }
 
-        //Initialize Á÷ÈÄ ÇÁ·¹ÀÓÀ» ÇÑ ¹ø ³Ñ°Ü Editor/RuntimeÀÇ È£Ãâ ¼ø¼­ Ãæµ¹ °¡´É¼ºÀ» ÁÙÀÓ
-        yield return null;
+        float minSeconds = bootMinVisibleSeconds;
+        if (bootExtraRandomSeconds > 0f)
+        {
+            float add = Random.Range(0f, bootExtraRandomSeconds);
+            minSeconds += add;
+            Dbg($"//Boot extraRandom={add:0.000}");
+        }
 
-        //BootSceneÀÇ ¿ªÇÒÀº 'ÄÚ¾î ÁØºñ + ·Îºñ ÀÌµ¿'±îÁö¸¸
-        yield return LoadSceneRoutine(lobbySceneName);
+        float elapsed = Time.unscaledTime - startedAt;
+        float remain = minSeconds - elapsed;
+        Dbg($"//Boot wait remain={remain:0.000}");
+
+        if (remain > 0f)
+        {
+            yield return new WaitForSecondsRealtime(remain);
+        }
+
+        if (!autoEnterLobbyFromBoot)
+        {
+            Dbg("//AutoEnter disabled");
+            yield break;
+        }
+
+        yield return EnterLobbyFromBootRoutine();
+    }
+
+    private IEnumerator EnterLobbyFromBootRoutine()
+    {
+        if (isTransitioning)
+        {
+            yield break;
+        }
+
+        isTransitioning = true;
+
+        EnsureCoreComponents();
+        if (sceneLoader == null)
+        {
+            Debug.LogError("//SceneLoader missing");
+            isTransitioning = false;
+            yield break;
+        }
+
+        Dbg("//EnterLobby showLoading");
+        if (UIController.Instance != null)
+        {
+            UIController.Instance.ShowLoading();
+            yield return null;//ë¡œë”©UIê·¸ë¦´í”„ë ˆìž„ì–‘ë³´
+        }
+
+        Scene active = SceneManager.GetActiveScene();
+        Dbg($"//EnterLobby active={active.name}");
+
+        if (active.IsValid() && active.name == bootSceneName)
+        {
+            yield return sceneLoader.LoadSceneReplaceActiveAsync(lobbySceneName);
+        }
+        else
+        {
+            yield return sceneLoader.LoadSceneAsync(lobbySceneName);
+        }
+
+        isTransitioning = false;
+        Dbg("//EnterLobby done");
     }
 
     private IEnumerator LoadSceneRoutine(string sceneName)
     {
+        EnsureCoreComponents();
+
         if (sceneLoader == null)
         {
-            Debug.LogError("SceneLoader°¡ ¾ø¾î.GameManager¿¡ SceneLoader°¡ ºÙ¾îÀÖ´ÂÁö È®ÀÎÇØÁà.");
+            Debug.LogError("//SceneLoader missing");
             yield break;
         }
 
@@ -134,10 +223,32 @@ public class GameManager : MonoBehaviour
 
         if (string.IsNullOrWhiteSpace(sceneName))
         {
-            Debug.LogError("¾À ÀÌ¸§ÀÌ ºñ¾îÀÖ¾î.GameManager ÀÎ½ºÆåÅÍ¿¡¼­ ¾À ÀÌ¸§À» ¼³Á¤ÇØÁà.");
+            Debug.LogError("//SceneName empty");
             yield break;
         }
 
+        isTransitioning = true;
+
+        Dbg($"//LoadSceneRoutine showLoading name={sceneName}");
+        if (UIController.Instance != null)
+        {
+            UIController.Instance.ShowLoading();
+            yield return null;
+        }
+
         yield return sceneLoader.LoadSceneAsync(sceneName);
+
+        isTransitioning = false;
+        Dbg($"//LoadSceneRoutine done name={sceneName}");
+    }
+
+    private void Dbg(string msg)
+    {
+        if (!enableDebug)
+        {
+            return;
+        }
+
+        Debug.Log(msg);
     }
 }
