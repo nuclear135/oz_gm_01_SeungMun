@@ -1,7 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//포켓몬 도감 전체 데이터베이스(ScriptableObject). CSV 임포트 결과를 저장하고 조회한다.
+/*
+PokemonDatabaseSO는에디터에서생성되는ScriptableObject데이터다.
+-데이터테이블/ScriptableObject를읽어런타임조회가가능하도록초기화한다.
+-외부에서는SetEntries을호출해이기능을사용한다.
+-컴포넌트참조는Awake에서캐싱하고,null을가드한다.
+*/
 [CreateAssetMenu(fileName = "PokemonDatabase", menuName = "Data/Pokedex/Pokemon Database")]
 public class PokemonDatabaseSO : ScriptableObject
 {

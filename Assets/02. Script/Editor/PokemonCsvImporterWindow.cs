@@ -21,7 +21,7 @@ EvolutionCode 규칙
 public class PokemonCsvImporterWindow : EditorWindow
 {
     [SerializeField] private TextAsset csvFile; //프로젝트의 CSV(TextAsset)
-    [SerializeField] private string outputAssetPath = "Assets/03.Data/Pokedex/PokemonDatabase.asset"; //생성/갱신될 에셋 경로
+    [SerializeField] private string outputAssetPath = "Assets/03.Database/Pokedex/PokemonDatabase.asset"; //생성/갱신될 에셋 경로
 
     private static readonly Regex FirstIntRegex = new Regex(@"-?\d+", RegexOptions.Compiled); //문자열에서 첫 숫자 블록 추출용
 

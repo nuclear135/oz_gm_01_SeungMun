@@ -2,96 +2,54 @@ using System;
 using UnityEngine;
 
 /*
-Æ÷ÄÏ¸ó 1°³ µ¥ÀÌÅÍ.
-
-±ÔÄ¢
-- No´Â ·±Å¸ÀÓ¿¡¼­ int(1,2,3...)·Î »ç¿ëÇÑ´Ù.
-- CSV´Â "#0001" °°Àº Ç¥±â Æ÷¸ËÀ» À¯ÁöÇÏ¹Ç·Î, UI Ç¥±â´Â DisplayNo·Î ÅëÀÏÇÑ´Ù.
-
-EvolutionCode ±ÔÄ¢(ÇÑ ÄÃ·³À¸·Î ÁøÈ­/Æ¯¼öÆû ÀÇ¹Ì¸¦ °ü¸®)
-- > 0 : ·¹º§ ÁøÈ­(¿¹: 16, 32)
-- = 0 : ÃÖÁ¾ÁøÈ­(·¹º§ ÁøÈ­ ¾øÀ½)
-- < 0 : Æ¯¼ö º¯Çü ÄÚµå
-
-Æ¯¼ö º¯Çü ÄÚµå(È®ÀåÇü)
-- -1                : ¸Ş°¡ÁøÈ­(´ÜÀÏ)
-- -101, -102 ...    : ¸Ş°¡ÁøÈ­ ¼¼ºÎ Æû(¿¹: X/Y)  (-100 ~ -199 ¹üÀ§ »ç¿ë)
-- -2                : °Å´ÙÀÌ¸Æ½º(´ÜÀÏ)
-- -301, -302, ...   : ÆûÃ¼ÀÎÁö ¼¼ºÎ Æû(¿©·¯ °³)  (-300 ÀÌÇÏ ¹üÀ§ »ç¿ë)
+PokemonEntryëŠ”Dataì˜ì—­ì—ì„œì‚¬ìš©ë˜ëŠ”classë‹¤.
+-ë°ì´í„°í…Œì´ë¸”/ScriptableObjectë¥¼ì½ì–´ëŸ°íƒ€ì„ì¡°íšŒê°€ê°€ëŠ¥í•˜ë„ë¡ì´ˆê¸°í™”í•œë‹¤.
+-ì»´í¬ë„ŒíŠ¸ì°¸ì¡°ëŠ”Awakeì—ì„œìºì‹±í•˜ê³ ,nullì„ê°€ë“œí•œë‹¤.
+-Updateì—ì„œGCìœ ë°œíŒ¨í„´ì„í”¼í•œë‹¤.
 */
 [Serializable]
 public class PokemonEntry
 {
-    [SerializeField] private int no;              //Àü±¹µµ°¨ ¹øÈ£(int)
-    [SerializeField] private string name;         //ÇÑ±Û ÀÌ¸§
+    [SerializeField] private int no;//ë„ê°ë²ˆí˜¸í‚¤
+    [SerializeField] private string name;//í‘œì‹œì´ë¦„
+    [SerializeField] private string type1;//íƒ€ì…1ë¬¸ìì—´
+    [SerializeField] private string type2;//íƒ€ì…2ë¬¸ìì—´
+    [SerializeField] private string abilities;//íŠ¹ì„±ë¬¸ìì—´
+    [SerializeField] private int hp;//hp
+    [SerializeField] private int atk;//atk
+    [SerializeField] private int def;//def
+    [SerializeField] private int spAtk;//spAtk
+    [SerializeField] private int spDef;//spDef
+    [SerializeField] private int speed;//speed
+    [SerializeField] private int value;//ì¢…ì¡±ê°’í•©
+    [SerializeField] private int evolutionCode;//ì§„í™”ë ˆë²¨/íŠ¹ìˆ˜ë³€í˜•ì½”ë“œ
 
-    [SerializeField] private string type1;        //Å¸ÀÔ1
-    [SerializeField] private string type2;        //Å¸ÀÔ2(´ÜÀÏÅ¸ÀÔÀÌ¸é ºóÄ­)
-    [SerializeField] private string abilities;    //Æ¯¼º ¹®ÀÚ¿­
+    public int No => no;//ë„ê°ë²ˆí˜¸
+    public string Name => name;//ì´ë¦„
+    public string Type1 => type1;//íƒ€ì…1
+    public string Type2 => type2;//íƒ€ì…2
+    public string Abilities => abilities;//íŠ¹ì„±
+    public int HP => hp;//hp
+    public int Atk => atk;//atk
+    public int Def => def;//def
+    public int SpAtk => spAtk;//spAtk
+    public int SpDef => spDef;//spDef
+    public int Speed => speed;//speed
+    public int Value => value;//ì¢…ì¡±ê°’í•©
+    public int EvolutionCode => evolutionCode;//ì›ë³¸ì½”ë“œ
+    public string DisplayNo => $"#{No:0000}";//UIí‘œê¸°
 
-    [SerializeField] private int hp;              //Ã¼·Â
-    [SerializeField] private int atk;             //°ø°İ·Â
-    [SerializeField] private int def;             //¹æ¾î·Â
-    [SerializeField] private int spAtk;           //Æ¯°ø
-    [SerializeField] private int spDef;           //Æ¯¹æ
-    [SerializeField] private int speed;           //½ºÇÇµå
+    public bool HasLevelEvolution => evolutionCode > 0;//ë ˆë²¨ì§„í™”ëŒ€ìƒ
+    public bool IsFinalEvolution => evolutionCode == 0;//ìµœì¢…ì§„í™”
+    public bool HasSpecialEvolution => evolutionCode < 0;//íŠ¹ìˆ˜ë³€í˜•
 
-    [SerializeField] private int value;           //Á¾Á·°ª
-    [SerializeField] private int evolutionCode;   //ÁøÈ­ ·¹º§/Æ¯¼öÄÚµå
+    public SpecialEvolutionKind SpecialEvolutionKind => GetSpecialEvolutionKind(evolutionCode);//íŠ¹ìˆ˜ë³€í˜•íƒ€ì…
+    public int MegaVariantIndex => GetMegaVariantIndex(evolutionCode);//-101->1,-102->2
+    public int FormChangeVariantIndex => GetFormChangeVariantIndex(evolutionCode);//-3->1,-4->2,-5->3
 
-    //µ¥ÀÌÅÍ´Â SO/CSV¿¡¼­ µé¾î¿À¹Ç·Î ·±Å¸ÀÓ¿¡¼­ °ª º¯°æÀº ¸·°í, Á¶È¸¸¸ ÇÏµµ·Ï ÇÑ´Ù.
-    public int No => no;
-    public string Name => name;
-
-    public string Type1 => type1;
-    public string Type2 => type2;
-
-    public string Abilities => abilities;
-
-    public int HP => hp;
-    public int Atk => atk;
-    public int Def => def;
-    public int SpAtk => spAtk;
-    public int SpDef => spDef;
-    public int Speed => speed;
-    public int Value => value;
-
-    public int EvolutionCode => evolutionCode;            //À½¼ö ±ÔÄ¢À» »ç¿ëÇÏ¹Ç·Î 0À¸·Î Å¬·¥ÇÁÇÏÁö ¾Ê´Â´Ù.
-    public string DisplayNo => $"#{No:0000}";             //UI Ç¥±â¿ë(¿¹: #0001)
-    public bool HasLevelEvolution => evolutionCode > 0;   //·¹º§ ÁøÈ­ ´ë»ó(¿¹: 16, 32)
-    public bool IsFinalEvolution => evolutionCode == 0;   //ÃÖÁ¾ÁøÈ­(·¹º§ ÁøÈ­ ¾øÀ½ °íÁ¤)
-    public bool HasSpecialEvolution => evolutionCode < 0; //Æ¯¼ö º¯Çü(¸Ş°¡/°Å´ÙÀÌ¸Æ½º/ÆûÃ¼ÀÎÁö µî)
-
-    //Æ¯¼ö º¯Çü Å¸ÀÔ(À½¼ö °ª ÇØ¼® °á°ú)
-    public SpecialEvolutionKind SpecialEvolutionKind => GetSpecialEvolutionKind(evolutionCode);
-
-    //-101 -> 1, -102 -> 2 (¸Ş°¡ ¼¼ºÎ ÆûÀÌ ¾Æ´Ò °æ¿ì 0)
-    public int MegaVariantIndex => GetMegaVariantIndex(evolutionCode);
-
-    //-301 -> 1, -302 -> 2 (ÆûÃ¼ÀÎÁö ¼¼ºÎ ÆûÀÌ ¾Æ´Ò °æ¿ì 0)
-    public int FormChangeVariantIndex => GetFormChangeVariantIndex(evolutionCode);
-
-    //CSV/ÀÓÆ÷ÅÍ¿¡¼­ °ªÀ» ¹Ş¾Æ Á÷·ÄÈ­ °¡´ÉÇÑ ÇüÅÂ·Î ÀúÀåÇÑ´Ù.
-    //No¸¸ À½¼ö ¹æÁöÇÏ°í, evolutionCode´Â À½¼ö ±ÔÄ¢ÀÌ ÀÖÀ¸¹Ç·Î ±×´ë·Î ÀúÀåÇÑ´Ù.
-    public PokemonEntry(
-        int no,
-        string name,
-        string type1,
-        string type2,
-        string abilities,
-        int hp,
-        int atk,
-        int def,
-        int spAtk,
-        int spDef,
-        int speed,
-        int value,
-        int evolutionCode
-    )
+    public PokemonEntry(int no,string name,string type1,string type2,string abilities,int hp,int atk,int def,int spAtk,int spDef,int speed,int value,int evolutionCode)
     {
-        //No´Â µµ°¨ Á¶È¸ Å°ÀÌ¹Ç·Î À½¼ö´Â ¸·´Â´Ù(0Àº ¡°¹ÌÁ¤/¿À·ù¡±·Î ³²°Üµµ µÊ)
-        this.no = Mathf.Max(0, no);
-
+        this.no = Mathf.Max(0, no);//í‚¤ëŠ”ìŒìˆ˜ë°©ì§€
         this.name = name;
         this.type1 = type1;
         this.type2 = type2;
@@ -105,55 +63,54 @@ public class PokemonEntry
         this.speed = speed;
         this.value = value;
 
-        //0Àº ÃÖÁ¾ÁøÈ­, À½¼ö´Â Æ¯¼ö º¯Çü ÄÚµåÀÌ¹Ç·Î ±×´ë·Î º¸Á¸ÇÑ´Ù
-        this.evolutionCode = evolutionCode;
+        this.evolutionCode = evolutionCode;//0ì€ìµœì¢…ì§„í™”,ìŒìˆ˜ëŠ”íŠ¹ìˆ˜ì½”ë“œë¼ê·¸ëŒ€ë¡œë³´ì¡´
     }
 
-    private SpecialEvolutionKind GetSpecialEvolutionKind(int v)
+    //ì½”ë“œí•´ì„
+    private static SpecialEvolutionKind GetSpecialEvolutionKind(int v)
     {
-        //¾ç¼ö/0Àº Æ¯¼ö º¯ÇüÀÌ ¾Æ´Ï´Ù
-        if (v >= 0)
+        if(v >= 0)
         {
             return SpecialEvolutionKind.None;
         }
 
-        //¸Ş°¡ ¼¼ºÎ Æû: -101, -102 ... (¹üÀ§¸¦ Á¦ÇÑÇØ¼­ ÆûÃ¼ÀÎÁö(-301...)¿Í Ãæµ¹ ¹æÁö)
-        if (v <= -100 && v > -200)
+        if(v <= -100)
         {
             return SpecialEvolutionKind.MegaEvolution;
         }
 
-        //ÆûÃ¼ÀÎÁö ¼¼ºÎ Æû: -301, -302 ...
-        if (v <= -300)
-        {
-            return SpecialEvolutionKind.FormChange;
-        }
-
-        //´ÜÀÏ ÄÚµå Ã³¸®
-        if (v == -1)
+        if(v == -1)
         {
             return SpecialEvolutionKind.MegaEvolution;
         }
 
-        if (v == -2)
+        if(v == -2)
         {
             return SpecialEvolutionKind.Gigantamax;
         }
 
-        //ÆûÃ¼ÀÎÁö ´ÜÀÏ(-3)Àº ¡°ÆûÃ¼ÀÎÁö ÀÖÀ½¡±¸¸ Ç¥½ÃÇÏ´Â ÃÖ¼Ò Ç¥ÇöÀ¸·Î ³²°ÜµĞ´Ù
-        if (v == -3)
+        if(v == -3)
         {
-            return SpecialEvolutionKind.FormChange;
+            return SpecialEvolutionKind.FormChange1;
         }
 
-        //±ÔÄ¢¿¡ ¾ø´Â °ªÀº UnknownÀ¸·Î µÖ¼­ µğ¹ö±ë Æ÷ÀÎÆ®·Î »ï´Â´Ù
+        if(v == -4)
+        {
+            return SpecialEvolutionKind.FormChange2;
+        }
+
+        if(v == -5)
+        {
+            return SpecialEvolutionKind.FormChange3;
+        }
+
         return SpecialEvolutionKind.Unknown;
     }
 
-    private int GetMegaVariantIndex(int v)
+    //ë©”ê°€ì„¸ë¶€í¼ì¸ë±ìŠ¤
+    private static int GetMegaVariantIndex(int v)
     {
-        //-101 -> 1, -102 -> 2 ...
-        if (v <= -100 && v > -200)
+        if(v <= -100)
         {
             return (-v) - 100;
         }
@@ -161,24 +118,24 @@ public class PokemonEntry
         return 0;
     }
 
-    private int GetFormChangeVariantIndex(int v)
+    //í¼ì²´ì¸ì§€ì¸ë±ìŠ¤
+    private static int GetFormChangeVariantIndex(int v)
     {
-        //-301 -> 1, -302 -> 2, -303 -> 3 ...
-        if (v <= -300)
+        if(v == -3)
         {
-            return (-v) - 300;
+            return 1;
+        }
+
+        if(v == -4)
+        {
+            return 2;
+        }
+
+        if(v == -5)
+        {
+            return 3;
         }
 
         return 0;
     }
-}
-
-//Æ¯¼ö º¯Çü Å¸ÀÔ(EvolutionCode À½¼ö ÇØ¼® °á°ú)
-public enum SpecialEvolutionKind
-{
-    None = 0,
-    MegaEvolution = 1,
-    Gigantamax = 2,
-    FormChange = 3,
-    Unknown = 99,
 }

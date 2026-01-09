@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /*
-PokemonDatabaseSO를 런타임에서 조회하기 위한 서비스.
--CSV/임포터로 만든 PokemonDatabaseSO를 받아서, 런타임에서 빠르게 조회할 수 있도록 캐시를 만든다.
--No(도감번호)는 같은 번호에 여러 폼(메가X/Y,폼체인지 등)이 붙을 수 있으므로 List로 보관한다.
--Name(이름) 조회는 편의 기능으로 1개만 보관한다(중복이 있으면 최초 항목을 사용).
--기본 폼(default)은 "특수 폼이 아닌 엔트리(EvolutionCode>=0)"를 최우선으로 선택한다..
+PokedexService는씬/오브젝트에붙는MonoBehaviour컴포넌트다.
+-매니저와데이터사이에서기능단위를제공하는서비스레이어다.
+-외부에서는Initialize을호출해이기능을사용한다.
+-외부에서는RebuildCache을호출해이기능을사용한다.
+-외부에서는GetAll을호출해이기능을사용한다.
+-외부에서는TryGetAllByNo을호출해이기능을사용한다.
 */
 public class PokedexService : MonoBehaviour
 {

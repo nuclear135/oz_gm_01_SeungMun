@@ -2,10 +2,15 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-//포켓몬 타입 문자열을 PokemonType enum으로 변환하는 유틸
+/*
+PokemonTypeParser는Core영역에서사용되는class다.
+-이스크립트는프로젝트에서PokemonTypeParser역할을한다.
+-컴포넌트참조는Awake에서캐싱하고,null을가드한다.
+-외부호출지점을명확히하고중복처리를막는다.
+*/
 public static class PokemonTypeParser
 {
-    //한글 타입 문자열 -> enum 매핑
+    //한글타입->enum
     private static readonly Dictionary<string, PokemonType> typeMap = new Dictionary<string, PokemonType>()
     {
         {"노말", PokemonType.Normal},
@@ -28,9 +33,10 @@ public static class PokemonTypeParser
         {"페어리", PokemonType.Fairy},
     };
 
-    public static PokemonType ParseSingleType(string rawType)
+    //빈값/오타는None
+    public static PokemonType ParseOrNone(string rawType)
     {
-        if (string.IsNullOrEmpty(rawType))
+        if (string.IsNullOrWhiteSpace(rawType))
         {
             return PokemonType.None;
         }
@@ -42,7 +48,7 @@ public static class PokemonTypeParser
             return result;
         }
 
-        Debug.LogWarning($"알 수 없는 타입 문자열: {trimmed}");
+        Debug.LogWarning($"//Unknown PokemonType string:{trimmed}");
         return PokemonType.None;
     }
 }
