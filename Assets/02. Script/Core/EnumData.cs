@@ -6,6 +6,34 @@ UISceneCanvasKind는Core영역에서사용되는enum다.
 -UI상태전환/페이드/버튼입력등화면흐름을담당한다.
 -컴포넌트참조는Awake에서캐싱하고,null을가드한다.
 */
+public static class EnumData
+{
+    public enum ScreenId
+    {
+        None = 0,
+        Boot = 1,
+        Lobby = 2,
+        Game = 3,
+        PartyList = 4,
+        Pokedex = 5
+            ,
+    }
+
+    public enum PopupId
+    {
+        None = 0,
+
+        Settings,
+        Confirm,
+        GameOver,
+        GameClear,
+        LevelUp,
+        Shop,
+        Item,
+        ContextMenu,
+        MoveSelect,
+    }
+}
 
 //UICanvas역할구분용
 public enum UISceneCanvasKind

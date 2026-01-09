@@ -35,25 +35,25 @@ public class SceneLoader : MonoBehaviour
 
         Dbg($"//LoadSceneAsync begin name={sceneName},mode={mode},active={SceneManager.GetActiveScene().name}");
 
-        if (UIController.Instance != null)
+        if (LoadingController.Instance != null)
         {
-            UIController.Instance.ShowLoading();
+            LoadingController.Instance.Show();
             shownAt = Time.unscaledTime;
             yield return null;//로딩UI그릴프레임양보
             Dbg("//LoadSceneAsync afterShowLoading");
         }
         else
         {
-            Dbg("//LoadSceneAsync UIController null");
+            Dbg("//LoadSceneAsync LoadingOverlay null");
         }
 
         AsyncOperation op = SceneManager.LoadSceneAsync(sceneName, mode);
         if (op == null)
         {
             Debug.LogError($"//LoadSceneAsync failed:{sceneName}");
-            if (UIController.Instance != null)
+            if (LoadingController.Instance != null)
             {
-                UIController.Instance.HideLoading();
+                LoadingController.Instance.Hide();
             }
             isLoading = false;
             yield break;
@@ -85,9 +85,9 @@ public class SceneLoader : MonoBehaviour
 
         Dbg($"//LoadSceneAsync done active={SceneManager.GetActiveScene().name}");
 
-        if (UIController.Instance != null)
+        if (LoadingController.Instance != null)
         {
-            UIController.Instance.HideLoading();
+            LoadingController.Instance.Hide();
         }
 
         isLoading = false;
@@ -114,25 +114,25 @@ public class SceneLoader : MonoBehaviour
 
         Dbg($"//Replace begin name={sceneName},prevActive={prevActive.name}");
 
-        if (UIController.Instance != null)
+        if (LoadingController.Instance != null)
         {
-            UIController.Instance.ShowLoading();
+            LoadingController.Instance.Show();
             shownAt = Time.unscaledTime;
             yield return null;//로딩UI그릴프레임양보
-            Dbg("//Replace afterShowLoading");
+            Dbg("//LoadSceneAsync afterShowLoading");
         }
         else
         {
-            Dbg("//Replace UIController null");
+            Dbg("//LoadSceneAsync LoadingOverlay null");
         }
 
         AsyncOperation loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         if (loadOp == null)
         {
             Debug.LogError($"//LoadSceneReplaceActiveAsync load failed:{sceneName}");
-            if (UIController.Instance != null)
+            if (LoadingController.Instance != null)
             {
-                UIController.Instance.HideLoading();
+                LoadingController.Instance.Hide();
             }
             isLoading = false;
             yield break;
@@ -166,9 +166,9 @@ public class SceneLoader : MonoBehaviour
         if (!loaded.IsValid() || !loaded.isLoaded)
         {
             Debug.LogError($"//LoadSceneReplaceActiveAsync scene not loaded:{sceneName}");
-            if (UIController.Instance != null)
+            if (LoadingController.Instance != null)
             {
-                UIController.Instance.HideLoading();
+                LoadingController.Instance.Hide();
             }
             isLoading = false;
             yield break;
@@ -191,9 +191,9 @@ public class SceneLoader : MonoBehaviour
             }
         }
 
-        if (UIController.Instance != null)
+        if (LoadingController.Instance != null)
         {
-            UIController.Instance.HideLoading();
+            LoadingController.Instance.Hide();
         }
 
         Dbg($"//Replace done active={SceneManager.GetActiveScene().name}");

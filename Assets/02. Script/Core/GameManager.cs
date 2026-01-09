@@ -120,10 +120,6 @@ public class GameManager : MonoBehaviour
 
         Dbg($"//Bootstrap begin scene={active.name}");
 
-        if (UIController.Instance != null)
-        {
-            UIController.Instance.ShowBoot();
-        }
 
         float startedAt = Time.unscaledTime;
 
@@ -184,9 +180,9 @@ public class GameManager : MonoBehaviour
         }
 
         Dbg("//EnterLobby showLoading");
-        if (UIController.Instance != null)
+        if (LoadingController.Instance != null)
         {
-            UIController.Instance.ShowLoading();
+            LoadingController.Instance.Show();
             yield return null;//로딩UI그릴프레임양보
         }
 
@@ -230,10 +226,10 @@ public class GameManager : MonoBehaviour
         isTransitioning = true;
 
         Dbg($"//LoadSceneRoutine showLoading name={sceneName}");
-        if (UIController.Instance != null)
+        if (LoadingController.Instance != null)
         {
-            UIController.Instance.ShowLoading();
-            yield return null;
+            LoadingController.Instance.Show();
+            yield return null;//로딩UI그릴프레임양보
         }
 
         yield return sceneLoader.LoadSceneAsync(sceneName);
